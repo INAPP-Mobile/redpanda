@@ -1,0 +1,17 @@
+{
+  "DATA_DIR": {
+    "defaultValue": "/var/lib/redpanda/data",
+    "description": "Redpanda data directory (topic log segments + cluster metadata). Persistent on the attached volume.",
+    "isOptional": false
+  },
+  "INTERNAL_PORT": {
+    "defaultValue": "9092",
+    "description": "Internal (private-network) Kafka listener port. Console and same-project services connect here.",
+    "isOptional": true
+  },
+  "SCHEMA_REGISTRY_PORT": {
+    "defaultValue": "8081",
+    "description": "Built-in Redpanda Schema Registry port (enables per-topic schema views in Console).",
+    "isOptional": true
+  }
+}

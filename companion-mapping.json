@@ -1,0 +1,7 @@
+{
+  "broker": {
+    "PRIVATE_DOMAIN": "broker.railway.internal",
+    "KAFKA_BROKERS": "broker.railway.internal:9092",
+    "SCHEMA_REGISTRY_URL": "http://broker.railway.internal:8081"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "broker/Dockerfile"
+  },
+  "deploy": {
+    "healthcheckPath": "/v1/status/ready",
+    "healthcheckTimeout": 180,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5,
+    "volumeMounts": [
+      { "name": "redpanda-data", "mountPath": "/var/lib/redpanda" }
+    ]
+  }
+}

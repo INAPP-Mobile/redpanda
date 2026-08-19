@@ -1,0 +1,6 @@
+# Keep this repo clean: no probe scratch, data dirs, or logs.
+_probe/
+data/
+data_*/
+*.log
+redpanda.log
