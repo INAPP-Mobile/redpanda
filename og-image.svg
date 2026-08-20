@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="600" cy="260" r="80" fill="#e63946" opacity="0.9"/>
+  <circle cx="600" cy="260" r="50" fill="#0f0f23"/>
+  <circle cx="600" cy="260" r="25" fill="#e63946"/>
+  <rect x="200" y="400" width="800" height="4" rx="2" fill="#e63946" opacity="0.6"/>
+  <rect x="250" y="420" width="700" height="4" rx="2" fill="#e63946" opacity="0.4"/>
+  <rect x="300" y="440" width="600" height="4" rx="2" fill="#e63946" opacity="0.2"/>
+  <text x="600" y="540" font-family="sans-serif" font-size="42" fill="#ffffff" text-anchor="middle" font-weight="bold">Redpanda + Console</text>
+  <text x="600" y="580" font-family="sans-serif" font-size="22" fill="#aaaaaa" text-anchor="middle">Kafka-compatible streaming platform</text>
+</svg>
