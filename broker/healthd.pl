@@ -21,8 +21,9 @@
 # grace period, the shim reflects the broker's actual readiness — the runtime
 # healthcheck then has up to 600s to observe the transition to ready.
 #
-# Dependency-free: core Perl (IO::Socket::INET) + the curl that already ships
-# in the redpanda image, used only to check redpanda's readiness.
+# Dependency-free: core Perl only (IO::Socket::INET + built-in time()).
+# Time::HiRes is NOT shipped in the redpanda image, so we use Perl's built-in
+# time() (epoch seconds) — sufficient for measuring elapsed seconds.
 #
 # Single-connection-at-a-time accept loop is acceptable because Railway probes
 # sequentially (one request, waits, retries).
@@ -30,7 +31,6 @@
 use strict;
 use warnings;
 use IO::Socket::INET;
-use Time::HiRes qw(time);
 
 my $port        = defined $ENV{HEALTH_PORT}  ? $ENV{HEALTH_PORT}  : 8080;
 my $admin_port  = defined $ENV{ADMIN_PORT}   ? $ENV{ADMIN_PORT}   : 9644;
@@ -64,8 +64,9 @@ sub probe_ready {
 sub state {
     # During grace, always report ready (200). After grace, reflect the
     # broker's actual readiness state.
-    if (time() - $start < $grace_secs) {
-        return ("200", "ok (grace " . int($grace_secs - (time() - $start)) . "s left)");
+    my $elapsed = time() - $start;
+    if ($elapsed < $grace_secs) {
+        return ("200", "ok (grace " . int($grace_secs - $elapsed) . "s left)");
     }
     my $code = probe_ready();
     return ($code, $code eq "200" ? "ok" : "not ready");
@@ -78,14 +79,14 @@ while (my $c = $srv->accept) {
         my $head = '';
         while (defined(my $line = <$c>)) {
             $head .= $line;
-            last if $head =~ /\\r?\\n\\s*\\r?\\n/;
+            last if $head =~ /\r?\n\s*\r?\n/;
         }
         my ($code, $body) = state();
         my $st = $code eq "200" ? "200 OK" : "503 Service Unavailable";
-        my $resp  = "HTTP/1.1 $st\\r\\n"
-                 .  "Content-Type: text/plain\\r\\n"
-                 .  "Content-Length: " . length($body) . "\\r\\n"
-                 .  "Connection: close\\r\\n\\r\\n"
+        my $resp  = "HTTP/1.1 $st\r\n"
+                 .  "Content-Type: text/plain\r\n"
+                 .  "Content-Length: " . length($body) . "\r\n"
+                 .  "Connection: close\r\n\r\n"
                  .  $body;
         print {$c} $resp;
     };
