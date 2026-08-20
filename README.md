@@ -3,7 +3,7 @@
   <h1 align="center">Redpanda + Console</h1>
   <p align="center"><strong>High-performance Kafka API streaming platform with web console, on Railway</strong></p>
   <p align="center">
-    <a href="https://railway.com/deploy/REPLACE_WITH_TEMPLATE_CODE"><img src="https://railway.app/button.svg" alt="Deploy on Railway" height="40"/></a>
+    <a href="https://railway.com/deploy/Fk-fLP"><img src="https://railway.app/button.svg" alt="Deploy on Railway" height="40"/></a>
   </p>
   <br/>
 </div>
@@ -31,9 +31,9 @@ Self-hosting Redpanda on Railway gives you full control over your streaming data
 
 ## Dependencies for Redpanda + Console
 
-- **Railway account** with a workspace (this deploy targets the `INAPP` workspace).
-- **No pre-installed dependencies** — both `redpandadata/redpanda` and `redpandadata/console` are pulled directly from Docker Hub.
-- **Kafka client** (for external producers/consumers): librdkafka, kafka-clients, confluent-kafka, etc.
+### Deployment Dependencies
+
+Railway builds both services from their Dockerfiles (`Dockerfile` for console, `broker/Dockerfile` for broker). No volumes, no persistent storage — the broker runs on Railway's ephemeral container filesystem (KRaft single-node metadata is rebuilt on each boot; production deployments should attach a volume for durability). All credentials and connection strings are auto-generated via Railway placeholders (`${{broker.RAILWAY_PRIVATE_DOMAIN}}`, `${{RAILWAY_PUBLIC_DOMAIN}}`).
 
 ## Features
 
