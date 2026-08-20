@@ -1,11 +1,11 @@
 {
   "KAFKA_BROKERS": {
-    "defaultValue": "broker.railway.internal:9092",
+    "defaultValue": "${{broker.RAILWAY_PRIVATE_DOMAIN}}:9092",
     "description": "Kafka bootstrap servers Console connects to. Defaults to the sibling broker service over the Railway private network (INTERNAL listener).",
     "isOptional": true
   },
   "SCHEMA_REGISTRY_URL": {
-    "defaultValue": "http://broker.railway.internal:8081",
+    "defaultValue": "http://${{broker.RAILWAY_PRIVATE_DOMAIN}}:8081",
     "description": "Built-in Redpanda Schema Registry (enabled on the broker). Enables per-topic schema views in Console. Leave empty to disable.",
     "isOptional": true
   }

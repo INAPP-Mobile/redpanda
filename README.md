@@ -8,9 +8,32 @@
   <br/>
 </div>
 
-# Deploy & Host
+# Deploy and Host
 
 **Redpanda** (Kafka-compatible streaming data platform) with **Redpanda Console** (web UI) on Railway. Single click spins up both services with internal networking already wired — no broker env-var hunting, no manual listener configuration.
+
+## About Hosting
+
+Redpanda is a Kafka-compatible streaming data platform written in C++. It's a drop-in replacement for Apache Kafka with lower latency, simpler ops, and no ZooKeeper dependency. This template deploys a single-node Redpanda broker with a web-based management console so you can inspect topics, produce/consume messages, and monitor schemas from one UI.
+
+## Why Deploy
+
+Self-hosting Redpanda on Railway gives you full control over your streaming data. Run event-driven architectures, real-time pipelines, or CQRS/ES systems without the operational overhead of managing Kafka clusters. The broker runs a single-node KRaft cluster (no external ZooKeeper), and the console connects to it automatically over the private network — just open the web UI and start streaming.
+
+## Common Use Cases
+
+- Event-driven microservices with async message passing
+- Real-time analytics pipelines and data ingestion
+- Change data capture (CDC) from databases to downstream consumers
+- CQRS/Event Sourcing systems with append-only streams
+- IoT telemetry and time-series data ingestion
+- Replacing managed Kafka services to reduce cost and egress
+
+## Dependencies for Redpanda + Console
+
+- **Railway account** with a workspace (this deploy targets the `INAPP` workspace).
+- **No pre-installed dependencies** — both `redpandadata/redpanda` and `redpandadata/console` are pulled directly from Docker Hub.
+- **Kafka client** (for external producers/consumers): librdkafka, kafka-clients, confluent-kafka, etc.
 
 ## Features
 
@@ -99,5 +122,5 @@ Two services in one Railway project, talking over the project's private network:
 ## See Also
 
 - [Redpanda docs](https://docs.redpanda.com/)
-- [Redpanda Console docs](://docs.redpanda.com/current/console/)
+- [Redpanda Console docs](https://docs.redpanda.com/current/console/)
 - [Railway TCP proxy](https://docs.railway.app/deploy/tcp-proxying)
