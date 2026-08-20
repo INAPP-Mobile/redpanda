@@ -1,12 +1,10 @@
 {
   "KAFKA_BROKERS": {
-    "defaultValue": "${{broker.RAILWAY_PRIVATE_DOMAIN}}:9092",
-    "description": "Kafka bootstrap servers Console connects to. Defaults to the sibling broker service over the Railway private network (INTERNAL listener).",
-    "isOptional": true
+    "value": "${{broker.RAILWAY_PRIVATE_DOMAIN}}:9092",
+    "description": "Kafka bootstrap servers Console connects to. Defaults to the sibling broker service over the Railway private network (INTERNAL listener)."
   },
   "SCHEMA_REGISTRY_URL": {
-    "defaultValue": "http://${{broker.RAILWAY_PRIVATE_DOMAIN}}:8081",
-    "description": "Built-in Redpanda Schema Registry (enabled on the broker). Enables per-topic schema views in Console. Leave empty to disable.",
-    "isOptional": true
+    "value": "http://${{broker.RAILWAY_PRIVATE_DOMAIN}}:8081",
+    "description": "Built-in Redpanda Schema Registry (enabled on the broker). Enables per-topic schema views in Console. Leave empty to disable."
   }
 }
