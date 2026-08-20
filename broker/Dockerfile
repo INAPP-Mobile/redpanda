@@ -2,6 +2,11 @@
 # Pinned stable release (no :latest per repo gate). v26.1.16
 FROM redpandadata/redpanda:v26.1.16
 
+# Cache buster — invalidate RAILPACK layer cache when the shim changes.
+# Increment to force a fresh COPY of healthd.pl.
+ARG CACHE_BUSTER=3
+RUN echo "cache buster: $CACHE_BUSTER"
+
 # Run as root so we can chown a fresh, root-owned volume before the broker
 # process (uid redpanda) needs it. (Matches repo "prefer root+chown" volume pattern.)
 USER root
