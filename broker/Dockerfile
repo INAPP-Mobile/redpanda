@@ -4,7 +4,7 @@ FROM redpandadata/redpanda:v26.1.16
 
 # Cache buster — invalidate RAILPACK layer cache when the shim changes.
 # Increment to force a fresh COPY of healthd.pl.
-ARG CACHE_BUSTER=3
+ARG CACHE_BUSTER=4
 RUN echo "cache buster: $CACHE_BUSTER"
 
 # Run as root so we can chown a fresh, root-owned volume before the broker
