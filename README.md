@@ -16,7 +16,7 @@
 
 - **Kafka wire-compatible** — drop-in replacement for Apache Kafka with the Kafka protocol.
 - **Dual named listeners** — an `INTERNAL` listener over the Railway private network (for Console + same-project services) and an `EXTERNAL` listener exposed to the internet through **Railway's L4 (raw TCP) proxy**.
-- **Persistent storage** — a Railway volume is attached to the broker so topics and metadata survive restarts and redeploys.
+- **Auto-configured broker** — single-node KRaft, no manual setup. Internal + external listeners resolve from runtime env (private domain + TCP-proxy vars).
 - **Built-in Schema Registry** on `:8081`, enabling per-topic schema views in the console.
 - **Auto-topic creation** enabled by default — produce to any topic name immediately.
 - **Web console** health endpoint (`/health`) gated on the broker being reachable.
@@ -45,18 +45,8 @@ kafka-console-consumer --bootstrap-server <RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TC
 |----------|---------|-------|
 | `KAFKA_BROKERS` | `broker.railway.internal:9092` | Bootstrap servers. Points at the sibling `broker` service (INTERNAL listener) over the private network. |
 | `SCHEMA_REGISTRY_URL` | `http://broker.railway.internal:8081` | Enables per-topic schema views. Leave empty to disable. |
-| `WEB_PORT` | `8080` | Port the console listens on. Railway routes the public domain here. |
 
-### Broker (`broker/` service)
-
-| Variable | Default | Notes |
-|----------|---------|-------|
-| `DATA_DIR` | `/var/lib/redpanda/data` | Redpanda data directory (topics + metadata). Persistent on the attached volume. |
-| `INTERNAL_PORT` | `9092` | Private-network Kafka listener port (Console + same-project services). |
-| `SCHEMA_REGISTRY_PORT` | `8081` | Built-in Schema Registry port. |
-| `RAILWAY_TCP_PROXY_DOMAIN` / `RAILWAY_TCP_PROXY_PORT` | (injected) | Railway L4 proxy endpoint the `EXTERNAL` listener advertises to external clients. Injected by Railway when the TCP proxy is enabled. |
-
-`DATA_DIR`, `INTERNAL_PORT`, `SCHEMA_REGISTRY_PORT` are the only broker variables you typically need to touch. The listener/advertise addresses are resolved from the runtime environment (private domain + TCP-proxy vars) by `broker/entrypoint.sh`.
+The broker (`broker/`) service is fully auto-configured via hardcoded ENV defaults in `broker/Dockerfile` — single-node KRaft, dual listeners, health shim on `:8080`. No deploy-form variables needed.
 
 ## Prerequisites
 
@@ -72,36 +62,42 @@ Two services in one Railway project, talking over the project's private network:
                      Railway private network
  ┌──────────────────────────────────────────────────────────────┐
  │                                                              │
- │   CONSOLE (public *.up.railway.app :8080)                    │
- │   ┌──────────────────────────────┐                            │
- │   │  redpandadata/console :8080  │── /health ────────────────▶│
- │   └──────────────┬───────────────┘                            │
- │                  │ KAFKA_BROKERS                               │
- │                  │ broker.railway.internal:9092 (INTERNAL)     │
- │                  ▼                                             │
- │   BROKER  ┌──────────────────────────────────────┐            │
- │   (volume)│  redpandadata/redpanda :9644 (admin)  │            │
- │           │  INTERNAL  :9092 ── private network   │            │
- │           │  EXTERNAL  :9093 ── TCP-proxy (L4) ──▶│ internet   │
- │           │  SchemaReg :8081                       │            │
- │           │  /var/lib/redpanda  → Railway volume   │            │
- │           └──────────────────────────────────────┘            │
+ │   ┌─────────────────────┐       ┌──────────────────────┐     │
+ │   │     broker          │       │     console          │     │
+ │   │                     │       │                      │     │
+ │   │  INTERNAL :9092 ◄───┼───►   │  KAFKA_BROKERS       │     │
+ │   │  EXTERNAL :9093     │       │  SCHEMA_REGISTRY_URL  │     │
+ │   │  Schema  :8081  ◄───┼───►   │                      │     │
+ │   │  Health  :8080      │       │  HTTP :8080  ◄──► public     │
+ │   │  Admin   :9644      │       │                      │     │
+ │   └─────────────────────┘       └──────────────────────┘     │
+ │                                                              │
  └──────────────────────────────────────────────────────────────┘
+             ▲
+             │ Railway L4 TCP proxy (EXTERNAL listener)
+             ▼
+     Internet Kafka clients
 ```
 
-- **INTERNAL listener** (`9092`) advertises `broker.railway.internal:9092` so in-project services and the console reach the broker without any public exposure.
-- **EXTERNAL listener** (`9093`) advertises the Railway L4 TCP-proxy endpoint so external Kafka clients can connect over the public internet.
-- The volume is mounted at `/var/lib/redpanda` (parent of `DATA_DIR=/var/lib/redpanda/data`) so the volume's `lost+found/` stays outside the data tree and the broker process (uid `redpanda`) can write.
+- **INTERNAL listener** (`:9092`) — binds `0.0.0.0:9092`, advertises `broker.railway.internal:9092`. Used by the Console and any same-project service.
+- **EXTERNAL listener** (`:9093`) — binds `0.0.0.0:9093`, advertises the Railway TCP-proxy endpoint (`RAILWAY_TCP_PROXY_DOMAIN:RAILWAY_TCP_PROXY_PORT`) so internet Kafka clients can reach it.
+- **Schema Registry** (`:8081`) — built into the broker, used by Console for per-topic schema views.
+- **Health shim** (`:8080`) — Perl script reflecting `/v1/status/ready` on the Admin API. Railway's healthcheck hits this port.
+- **Admin API** (`:9644`) — internal only, used by the health shim.
 
-## Deploy
+## Configuration Reference
 
-| Aspect | Detail |
-|--------|--------|
-| Image (console) | `redpandadata/console:v3.10.0` |
-| Image (broker) | `redpandadata/redpanda:v26.1.16` |
-| Broker volume | `/var/lib/redpanda` (name: `redpanda-data`) |
-| Console health path | `/health` |
-| Broker health path | `/v1/status/ready` (Admin API, `:9644`) |
-| Service naming | Console = root directory, Broker = `broker/` (private DNS `broker.railway.internal`) |
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Redpanda image | `redpandadata/redpanda:v26.1.16` | Pinned stable release. |
+| Console image | `redpandadata/console:latest` | Tracks upstream latest. |
+| Broker smp | 1 | Tuned for small Railway instances. |
+| KRaft mode | single-node | No external ZooKeeper needed. |
+| Auto-topic creation | enabled | Produce to any topic immediately. |
+| Console healthcheck | `/health` (port 8080) | Gated on broker reachability. |
 
-> **TCP proxy note for template publishers:** to make the `EXTERNAL` listener advertise a public endpoint, enable Railway's **TCP proxy** on the broker service's `9093` port. Railway injects `RAILWAY_TCP_PROXY_DOMAIN` / `RAILWAY_TCP_PROXY_PORT`, which the broker entrypoint uses as the advertised address. Without it, `EXTERNAL` falls back to the private domain so the broker still advertises a routable (in-project) address rather than an empty string.
+## See Also
+
+- [Redpanda docs](https://docs.redpanda.com/)
+- [Redpanda Console docs](://docs.redpanda.com/current/console/)
+- [Railway TCP proxy](https://docs.railway.app/deploy/tcp-proxying)
