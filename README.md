@@ -34,6 +34,18 @@ Self-hosting Redpanda on Railway gives you full control over your streaming data
 
 Railway builds both services from their Dockerfiles (`Dockerfile` for console, `broker/Dockerfile` for broker). The broker mounts a persistent Railway volume at `/var/lib/redpanda/data` — topic log segments and KRaft metadata survive restarts and deploys (no data loss across reboots). All credentials and connection strings are auto-generated via Railway placeholders (`${{broker.RAILWAY_PRIVATE_DOMAIN}}`, `${{RAILWAY_PUBLIC_DOMAIN}}`).
 
+### Storage
+
+| Item | Detail |
+|------|--------|
+| **Mount point** | `/var/lib/redpanda/data` |
+| **What's persisted** | Topic log segments, partition indexes, KRaft cluster metadata |
+| **Survives** | Restarts, deploys, and image updates |
+| **First-boot handling** | The entrypoint creates the directory and `chown`s it to the `redpanda` user automatically — no manual setup |
+| **Data loss risk** | None across normal operation; the volume is backed by Railway's persistent storage |
+
+> Without this volume, every restart rebuilds the cluster from scratch — all topics and messages are wiped. The mount is what makes the broker safe for production use.
+
 ## Features
 
 - **Kafka wire-compatible** — drop-in replacement for Apache Kafka with the Kafka protocol.
