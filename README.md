@@ -32,7 +32,7 @@ Self-hosting Redpanda on Railway gives you full control over your streaming data
 
 ### Deployment Dependencies
 
-Railway builds both services from their Dockerfiles (`Dockerfile` for console, `broker/Dockerfile` for broker). No volumes, no persistent storage — the broker runs on Railway's ephemeral container filesystem (KRaft single-node metadata is rebuilt on each boot; production deployments should attach a volume for durability). All credentials and connection strings are auto-generated via Railway placeholders (`${{broker.RAILWAY_PRIVATE_DOMAIN}}`, `${{RAILWAY_PUBLIC_DOMAIN}}`).
+Railway builds both services from their Dockerfiles (`Dockerfile` for console, `broker/Dockerfile` for broker). The broker mounts a persistent Railway volume at `/var/lib/redpanda/data` — topic log segments and KRaft metadata survive restarts and deploys (no data loss across reboots). All credentials and connection strings are auto-generated via Railway placeholders (`${{broker.RAILWAY_PRIVATE_DOMAIN}}`, `${{RAILWAY_PUBLIC_DOMAIN}}`).
 
 ## Features
 
@@ -57,6 +57,44 @@ kafka-console-producer --bootstrap-server <RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TC
   --topic my-topic
 kafka-console-consumer --bootstrap-server <RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TCP_PROXY_PORT> \
   --topic my-topic --from-beginning
+```
+
+```javascript
+// kafkajs — produce to the EXTERNAL (public) TCP endpoint in ~30 seconds
+const { Kafka } = require('kafkajs');
+
+const kafka = new Kafka({
+  clientId: 'railway-redpanda-demo',
+  brokers: ['<RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TCP_PROXY_PORT>'],
+});
+
+const producer = kafka.producer();
+const consumer = kafka.consumer({ groupId: 'railway-demo-group' });
+
+async function run() {
+  await producer.connect();
+  await consumer.connect();
+
+  // Auto-topic creation is on — produce to any topic immediately
+  await producer.send({
+    topic: 'my-topic',
+    messages: [
+      { key: 'hello', value: 'from Railway Redpanda!' },
+      { key: 'ts', value: new Date().toISOString() },
+    ],
+  });
+  console.log('[producer] sent 2 messages');
+
+  await consumer.subscribe({ topic: 'my-topic', fromBeginning: true });
+  await consumer.run({
+    eachMessage: async ({ message }) => {
+      console.log(`[consumer] ${message.key}: ${message.value}`);
+      process.exit(0); // demo: exit after first batch
+    },
+  });
+}
+
+run().catch(console.error);
 ```
 
 ## Environment
