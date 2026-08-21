@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/INAPP-Mobile/redpanda/master/template-icon.svg" width="200" alt="Redpanda logo"/>
+![Redpanda logo](https://raw.githubusercontent.com/INAPP-Mobile/redpanda/master/template-icon.svg)
   <h1 align="center">Redpanda + Console</h1>
   <p align="center"><strong>High-performance Kafka API streaming platform with web console, on Railway</strong></p>
   <p align="center">
