@@ -1,12 +1,11 @@
-<div align="center">
 ![Redpanda logo](https://raw.githubusercontent.com/INAPP-Mobile/redpanda/master/template-icon.svg)
-  <h1 align="center">Redpanda + Console</h1>
-  <p align="center"><strong>High-performance Kafka API streaming platform with web console, on Railway</strong></p>
-  <p align="center">
+
+<h1 align="center">Redpanda + Console</h1>
+<p align="center"><strong>High-performance Kafka API streaming platform with web console, on Railway</strong></p>
+<p align="center">
     <a href="https://railway.com/deploy/redpanda-1"><img src="https://railway.app/button.svg" alt="Deploy on Railway" height="40"/></a>
   </p>
   <br/>
-</div>
 
 # Deploy and Host
 
