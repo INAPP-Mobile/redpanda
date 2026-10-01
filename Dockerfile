@@ -1,6 +1,6 @@
 # Upstream: redpandadata/console (Redpanda Console — Kafka web UI)
 # Pinned stable release (no :latest per repo gate). v3.10.0
-FROM redpandadata/console:v3.10.0
+FROM redpandadata/console:v3.11.0
 
 # Console listens here; Railway routes the public domain to $PORT.
 ENV PORT=8080
