@@ -65,9 +65,9 @@ Railway builds both services from their Dockerfiles (`Dockerfile` for console, `
 
 ```bash
 # Example: any Kafka client against the EXTERNAL (public) listener
-kafka-console-producer --bootstrap-server <RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TCP_PROXY_PORT> \
+kafka-console-producer --bootstrap-server RAILWAY_TCP_PROXY_DOMAIN:RAILWAY_TCP_PROXY_PORT \
   --topic my-topic
-kafka-console-consumer --bootstrap-server <RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TCP_PROXY_PORT> \
+kafka-console-consumer --bootstrap-server RAILWAY_TCP_PROXY_DOMAIN:RAILWAY_TCP_PROXY_PORT \
   --topic my-topic --from-beginning
 ```
 
@@ -77,7 +77,7 @@ const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({
   clientId: 'railway-redpanda-demo',
-  brokers: ['<RAILWAY_TCP_PROXY_DOMAIN>:<RAILWAY_TCP_PROXY_PORT>'],
+  brokers: ['RAILWAY_TCP_PROXY_DOMAIN:RAILWAY_TCP_PROXY_PORT'],
 });
 
 const producer = kafka.producer();
